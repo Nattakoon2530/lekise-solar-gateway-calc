@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeKise Solar Sizing Calculator · Gateway Station</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --lk-blue:        #1167B1;
+    --lk-blue-dark:   #0B4F8A;
+    --lk-blue-deeper: #083968;
+    --lk-blue-light:  #E8F2FC;
+    --lk-blue-mid:    #3B88CC;
+    --lk-white:       #FFFFFF;
+    --lk-off-white:   #F4F8FD;
+    --lk-border:      #C5D9EE;
+    --lk-text:        #0D2F50;
+    --lk-text-muted:  #4A6E8F;
+    --lk-text-light:  #7A9BBF;
+    --lk-success:     #1B7A4A;
+    --lk-success-bg:  #E6F5EE;
+    --lk-warn:        #8A5E00;
+    --lk-warn-bg:     #FFF4D6;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --shadow-sm: 0 1px 3px rgba(11,79,138,0.08), 0 1px 2px rgba(11,79,138,0.05);
+    --shadow-md: 0 4px 16px rgba(11,79,138,0.10), 0 2px 6px rgba(11,79,138,0.06);
+    --shadow-lg: 0 12px 40px rgba(11,79,138,0.13), 0 4px 12px rgba(11,79,138,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--lk-off-white);
+    color: var(--lk-text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    background: var(--lk-blue);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(11,79,138,0.25);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  /* LeKise logo SVG inline */
+  .logo-svg-wrap {
+    background: var(--lk-white);
+    border-radius: var(--radius-sm);
+    padding: 3px 6px;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.65);
+    text-transform: uppercase;
+    border-left: 1px solid rgba(255,255,255,0.25);
+    padding-left: 12px;
+    line-height: 1.3;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-pill {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* ===== HERO STRIP ===== */
+  .hero {
+    background: linear-gradient(135deg, var(--lk-blue-deeper) 0%, var(--lk-blue) 50%, var(--lk-blue-mid) 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(255,255,255,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 40%);
+  }
+
+  .hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--lk-white);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.72);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ===== LAYOUT ===== */
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    nav { padding: 0 1rem; }
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .page { padding: 1.25rem 1rem 3rem; }
+    .hero h1 { font-size: 1.5rem; }
+    .results-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--lk-white);
+    border: 1px solid var(--lk-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-header {
+    background: var(--lk-blue);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-header-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lk-white);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .card-body { padding: 1.25rem; }
+
+  /* ===== FORM FIELDS ===== */
+  .field {
+    margin-bottom: 1rem;
+  }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--lk-text-muted);
+    margin-bottom: 5px;
+    letter-spacing: 0.01em;
+  }
+
+  .input-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--lk-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--lk-white);
+    transition: border-color 0.18s, box-shadow 0.18s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: var(--lk-blue);
+    box-shadow: 0 0 0 3px rgba(17,103,177,0.12);
+  }
+
+  .input-wrap input,
+  .input-wrap select {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--lk-text);
+    padding: 9px 12px;
+    min-width: 0;
+  }
+
+  .input-unit {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lk-white);
+    background: var(--lk-blue);
+    padding: 0 12px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  /* ===== CALCULATE BUTTON ===== */
+  .btn-calc {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 14px 24px;
+    background: var(--lk-blue);
+    color: var(--lk-white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+    box-shadow: 0 4px 14px rgba(17,103,177,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-calc:hover {
+    background: var(--lk-blue-dark);
+    box-shadow: 0 6px 20px rgba(17,103,177,0.35);
+  }
+
+  .btn-calc:active { transform: scale(0.98); }
+
+  /* ===== RESULTS ===== */
+  .results-section {
+    display: none;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  .results-section.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .metric-card {
+    background: var(--lk-white);
+    border: 1px solid var(--lk-border);
+    border-radius: var(--radius-md);
+    padding: 14px 12px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s;
+  }
+
+  .metric-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+  .metric-card.highlight {
+    background: var(--lk-blue);
+    border-color: var(--lk-blue-dark);
+  }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--lk-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+
+  .metric-card.highlight .metric-label { color: rgba(255,255,255,0.65); }
+
+  .metric-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--lk-blue);
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .metric-card.highlight .metric-value { color: var(--lk-white); }
+
+  .metric-unit {
+    font-size: 11px;
+    color: var(--lk-text-light);
+    font-weight: 500;
+  }
+
+  .metric-card.highlight .metric-unit { color: rgba(255,255,255,0.6); }
+
+  /* ===== STEPS TABLE ===== */
+  .steps-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .steps-table thead tr {
+    background: var(--lk-blue-light);
+  }
+
+  .steps-table th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--lk-blue-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .steps-table th:last-child { text-align: right; }
+
+  .steps-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--lk-border);
+    color: var(--lk-text);
+  }
+
+  .steps-table td:first-child {
+    font-weight: 600;
+    color: var(--lk-text-muted);
+    font-size: 12px;
+    width: 24px;
+  }
+
+  .steps-table td:last-child {
+    text-align: right;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lk-blue);
+  }
+
+  .steps-table tr:last-child td { border-bottom: none; }
+
+  .steps-table tr:nth-child(even) td { background: var(--lk-blue-light); }
+
+  /* ===== SUMMARY BOX ===== */
+  .summary-box {
+    margin-top: 1rem;
+    border: 2px solid var(--lk-blue);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .summary-header {
+    background: var(--lk-blue);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .summary-header span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--lk-white);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .summary-body {
+    background: var(--lk-white);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .sum-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--lk-border);
+    border-right: 1px solid var(--lk-border);
+  }
+
+  .sum-item:nth-child(even) { border-right: none; }
+  .sum-item:nth-last-child(-n+2) { border-bottom: none; }
+
+  .sum-item-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--lk-text-light);
+    margin-bottom: 4px;
+  }
+
+  .sum-item-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--lk-blue);
+  }
+
+  .sum-item-note {
+    font-size: 11px;
+    color: var(--lk-text-muted);
+    margin-top: 2px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .tag-blue { background: var(--lk-blue-light); color: var(--lk-blue-dark); }
+  .tag-green { background: var(--lk-success-bg); color: var(--lk-success); }
+  .tag-warn { background: var(--lk-warn-bg); color: var(--lk-warn); }
+
+  /* ===== SECTION DIVIDER ===== */
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--lk-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--lk-border);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--lk-blue-deeper);
+    padding: 1.5rem 2rem;
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+  }
+
+  footer strong {
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+  }
+
+  /* ===== INFO CHIPS ===== */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .chip {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--lk-blue-dark);
+    background: var(--lk-blue-light);
+    border: 1px solid var(--lk-border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-svg-wrap">
+      <!-- LeKise logo: L e K i s e -->
+      <svg width="100" height="26" viewBox="0 0 200 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="200" height="52" fill="#1167B1"/>
+        <!-- L -->
+        <rect x="7" y="7" width="9" height="38" rx="2" fill="white"/>
+        <rect x="7" y="38" width="21" height="8" rx="2" fill="white"/>
+        <!-- e -->
+        <path d="M34 27 Q34 14 47 14 Q60 14 60 27 L60 31 L38 31 Q39 38 47 38 Q53 38 56 35 L60 39 Q55 45 47 45 Q34 45 34 31 Z M38 25 L57 25 Q55 19 47 19 Q40 19 38 25 Z" fill="white"/>
+        <!-- K -->
+        <rect x="64" y="7" width="9" height="38" rx="2" fill="white"/>
+        <path d="M73 26 L89 7 L101 7 L84 26 L102 45 L90 45 Z" fill="white"/>
+        <!-- i dot -->
+        <circle cx="113" cy="11" r="5" fill="white"/>
+        <!-- i stem -->
+        <rect x="109" y="19" width="8" height="26" rx="2" fill="white"/>
+        <!-- s (lowercase — top capped at y=14, same x-height as e) -->
+        <path d="M127 34 Q127 44 138 44 Q150 44 150 34 Q150 27 138 26 Q131 25 131 21 Q131 14 138 14 Q145 14 147 19 L150 17 Q148 12 138 12 Q127 12 127 21 Q127 29 138 30 Q146 31 146 34 Q146 42 138 42 Q131 42 131 34 Z" fill="white"/>
+        <!-- e (last) -->
+        <path d="M158 27 Q158 14 171 14 Q184 14 184 27 L184 31 L162 31 Q163 38 171 38 Q177 38 180 35 L184 39 Q179 45 171 45 Q158 45 158 31 Z M162 25 L181 25 Q179 19 171 19 Q164 19 162 25 Z" fill="white"/>
+      </svg>
+    </div>
+    <div class="nav-badge">Solar<br>Calculator</div>
+  </a>
+  <div class="nav-right">
+    <div class="nav-pill">Gateway Station · 48 VDC</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="12" r="4"/>
+      <line x1="12" y1="2" x2="12" y2="5"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+      <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+      <line x1="2" y1="12" x2="5" y2="12"/>
+      <line x1="19" y1="12" x2="22" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+      <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+    </svg>
+  </div>
+  <h1>Solar Power Sizing Calculator</h1>
+  <p>คำนวณขนาดแบตเตอรี่และแผง Solar สำหรับ Stand-Alone Gateway Station</p>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="page">
+
+  <div class="chips">
+    <div class="chip">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Stand-Alone System
+    </div>
+    <div class="chip">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      ZETA / IoT Gateway AP
+    </div>
+    <div class="chip">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      LiFePO4 Battery
+    </div>
+    <div class="chip">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      All-in-One Compatible
+    </div>
+  </div>
+
+  <!-- INPUT SECTION -->
+  <div class="section-label">พารามิเตอร์การคำนวณ</div>
+
+  <div class="grid-2" style="margin-bottom: 1rem;">
+
+    <!-- LOAD CARD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h2>Load Parameters</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label for="p_load">Gateway Power (max)</label>
+          <div class="input-wrap">
+            <input type="number" id="p_load" value="15" min="1" step="1" placeholder="15">
+            <div class="input-unit">W</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="v_sys">System Voltage</label>
+          <div class="input-wrap">
+            <select id="v_sys">
+              <option value="48" selected>48 VDC</option>
+              <option value="24">24 VDC</option>
+              <option value="12">12 VDC</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="backup_days">Backup Duration</label>
+          <div class="input-wrap">
+            <input type="number" id="backup_days" value="3" min="1" max="30" step="1">
+            <div class="input-unit">Days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATTERY CARD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>
+        </div>
+        <h2>Battery Parameters</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label for="chem">Battery Chemistry</label>
+          <div class="input-wrap">
+            <select id="chem" onchange="toggleCustomDOD()">
+              <option value="0.80" selected>LiFePO4 · DOD 80%</option>
+              <option value="0.50">Lead-Acid · DOD 50%</option>
+              <option value="0.90">Li-Ion · DOD 90%</option>
+              <option value="custom">Custom DOD</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="custom_dod_field" style="display:none;">
+          <label for="custom_dod">Custom DOD Value</label>
+          <div class="input-wrap">
+            <input type="number" id="custom_dod" value="80" min="10" max="100" step="5">
+            <div class="input-unit">%</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="batt_round">Round Up Capacity (Ah step)</label>
+          <div class="input-wrap">
+            <select id="batt_round">
+              <option value="5" selected>Every 5 Ah</option>
+              <option value="10">Every 10 Ah</option>
+              <option value="20">Every 20 Ah</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="batt_efficiency">Battery Charge Efficiency</label>
+          <div class="input-wrap">
+            <input type="number" id="batt_efficiency" value="100" min="80" max="100" step="1">
+            <div class="input-unit">%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SOLAR CARD (full width) -->
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">
+      <div class="card-header-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      </div>
+      <h2>Solar Panel Parameters</h2>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div class="field">
+          <label for="psh">Peak Sun Hours (Thailand avg.)</label>
+          <div class="input-wrap">
+            <input type="number" id="psh" value="4.5" min="1" max="8" step="0.1">
+            <div class="input-unit">hr/day</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="loss_pct">System Loss (heat, dust, shading)</label>
+          <div class="input-wrap">
+            <input type="number" id="loss_pct" value="30" min="5" max="60" step="5">
+            <div class="input-unit">%</div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="panel_round">Round Up Panel (W step)</label>
+          <div class="input-wrap">
+            <select id="panel_round">
+              <option value="10">Every 10 W</option>
+              <option value="25">Every 25 W</option>
+              <option value="50" selected>Every 50 W</option>
+              <option value="100">Every 100 W</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="charge_days">Days to Recharge Battery</label>
+          <div class="input-wrap">
+            <input type="number" id="charge_days" value="1" min="1" max="5" step="1">
+            <div class="input-unit">days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calculate()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    Calculate Solar Sizing
+  </button>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="results">
+
+    <div class="section-label" style="margin-top: 2rem;">ผลลัพธ์การคำนวณ</div>
+
+    <div class="results-grid">
+      <div class="metric-card">
+        <div class="metric-label">Daily Usage</div>
+        <div class="metric-value" id="r_daily">—</div>
+        <div class="metric-unit">Wh / day</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Backup Energy</div>
+        <div class="metric-value" id="r_backup">—</div>
+        <div class="metric-unit">Wh total</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">Battery (min)</div>
+        <div class="metric-value" id="r_batt_ah">—</div>
+        <div class="metric-unit">Ah required</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">Solar Panel</div>
+        <div class="metric-value" id="r_panel_w">—</div>
+        <div class="metric-unit">W required</div>
+      </div>
+    </div>
+
+    <!-- STEPS TABLE -->
+    <div class="card" style="margin-bottom: 1rem;">
+      <div class="card-header">
+        <div class="card-header-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <h2>Calculation Steps</h2>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="steps-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th>Formula</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="steps_body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUMMARY BOX -->
+    <div class="summary-box">
+      <div class="summary-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Recommended Equipment Specification</span>
+      </div>
+      <div class="summary-body">
+        <div class="sum-item">
+          <div class="sum-item-label">Battery Pack</div>
+          <div class="sum-item-value" id="sum_batt">—</div>
+          <div class="sum-item-note" id="sum_batt_note">—</div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-item-label">Solar Panel</div>
+          <div class="sum-item-value" id="sum_panel">—</div>
+          <div class="sum-item-note" id="sum_panel_note">—</div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-item-label">System Voltage</div>
+          <div class="sum-item-value" id="sum_volt">—</div>
+          <div class="sum-item-note">DC Bus Voltage</div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-item-label">Backup Duration</div>
+          <div class="sum-item-value" id="sum_backup">—</div>
+          <div class="sum-item-note" id="sum_backup_note">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>LeKise Group</strong> · Solar Sizing Calculator for Stand-Alone IoT Gateway</p>
+  <p style="margin-top: 6px;">คำนวณสำหรับ ZETA AP Gateway · 48 VDC System · All-in-One Solar + Battery</p>
+</footer>
+
+<script>
+function toggleCustomDOD() {
+  var sel = document.getElementById('chem');
+  document.getElementById('custom_dod_field').style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+
+function roundUp(val, step) {
+  return Math.ceil(val / step) * step;
+}
+
+function getDOD() {
+  var sel = document.getElementById('chem').value;
+  if (sel === 'custom') return parseFloat(document.getElementById('custom_dod').value) / 100;
+  return parseFloat(sel);
+}
+
+function getChemLabel() {
+  var sel = document.getElementById('chem');
+  return sel.options[sel.selectedIndex].text.split(' ·')[0];
+}
+
+function calculate() {
+  var P          = parseFloat(document.getElementById('p_load').value) || 15;
+  var V          = parseFloat(document.getElementById('v_sys').value) || 48;
+  var backupDays = parseFloat(document.getElementById('backup_days').value) || 3;
+  var psh        = parseFloat(document.getElementById('psh').value) || 4.5;
+  var lossPct    = parseFloat(document.getElementById('loss_pct').value) || 30;
+  var battRound  = parseFloat(document.getElementById('batt_round').value) || 5;
+  var panelRound = parseFloat(document.getElementById('panel_round').value) || 50;
+  var chargeDays = parseFloat(document.getElementById('charge_days').value) || 1;
+  var battEff    = parseFloat(document.getElementById('batt_efficiency').value) / 100 || 1;
+  var dod        = getDOD();
+  var eff        = 1 - (lossPct / 100);
+
+  var backupHours = backupDays * 24;
+  var dailyWh     = P * 24;
+  var backupWh    = P * backupHours;
+  var battWh      = backupWh / dod;
+  var battAhCalc  = battWh / V / battEff;
+  var genReq      = dailyWh / eff;
+
+  // Panel must cover: daily load + recharge backup over chargeDays
+  var rechargeWh  = backupWh / chargeDays;
+  var panelWCalc  = (genReq + (rechargeWh / eff) / (chargeDays * psh)) / psh;
+  // Simpler standard approach:
+  var panelStandard = genReq / psh;
+
+  var battAhStd   = roundUp(battAhCalc, battRound);
+  var panelStd    = roundUp(panelStandard, panelRound);
+
+  // Update metric cards
+  document.getElementById('r_daily').textContent   = dailyWh.toFixed(0);
+  document.getElementById('r_backup').textContent  = backupWh.toFixed(0);
+  document.getElementById('r_batt_ah').textContent = battAhCalc.toFixed(1);
+  document.getElementById('r_panel_w').textContent = panelStandard.toFixed(1);
+
+  // Build steps
+  var chemLabel = getChemLabel();
+  var steps = [
+    {
+      desc: 'Daily energy usage',
+      formula: P + ' W × 24 h',
+      result: dailyWh.toFixed(0) + ' Wh/day'
+    },
+    {
+      desc: 'Backup energy (' + backupDays + ' day' + (backupDays > 1 ? 's' : '') + ' = ' + backupHours + ' h)',
+      formula: P + ' W × ' + backupHours + ' h',
+      result: backupWh.toFixed(0) + ' Wh'
+    },
+    {
+      desc: 'Battery capacity (' + chemLabel + ', DOD ' + (dod * 100).toFixed(0) + '%)',
+      formula: backupWh.toFixed(0) + ' ÷ ' + dod,
+      result: battWh.toFixed(0) + ' Wh'
+    },
+    {
+      desc: 'Battery (Ah) at ' + V + ' VDC',
+      formula: battWh.toFixed(0) + ' ÷ ' + V + ' V',
+      result: battAhCalc.toFixed(2) + ' Ah'
+    },
+    {
+      desc: 'Generation requirement (loss ' + lossPct + '%)',
+      formula: dailyWh.toFixed(0) + ' ÷ ' + eff.toFixed(2),
+      result: genReq.toFixed(0) + ' Wh'
+    },
+    {
+      desc: 'Panel wattage (PSH = ' + psh + ' h/day)',
+      formula: genReq.toFixed(0) + ' ÷ ' + psh + ' h',
+      result: panelStandard.toFixed(1) + ' W'
+    }
+  ];
+
+  var tbody = document.getElementById('steps_body');
+  tbody.innerHTML = steps.map(function(s, i) {
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td>' + s.desc + '</td>' +
+      '<td style="font-family: monospace; font-size: 12px; color: var(--lk-text-muted);">' + s.formula + '</td>' +
+      '<td>' + s.result + '</td>' +
+      '</tr>';
+  }).join('');
+
+  // Summary
+  document.getElementById('sum_batt').innerHTML =
+    V + ' V&nbsp;' + battAhStd + ' Ah' +
+    ' <span class="tag tag-blue">' + chemLabel + '</span>';
+  document.getElementById('sum_batt_note').textContent =
+    'Min. required: ' + battAhCalc.toFixed(1) + ' Ah';
+
+  document.getElementById('sum_panel').innerHTML =
+    panelStd + ' W' +
+    ' <span class="tag tag-green">or more</span>';
+  document.getElementById('sum_panel_note').textContent =
+    'Min. required: ' + panelStandard.toFixed(1) + ' W';
+
+  document.getElementById('sum_volt').textContent = V + ' VDC';
+
+  document.getElementById('sum_backup').textContent =
+    backupDays + ' day' + (backupDays > 1 ? 's' : '');
+  document.getElementById('sum_backup_note').textContent =
+    backupHours + ' hours @ ' + P + ' W';
+
+  // Show results
+  var res = document.getElementById('results');
+  res.classList.add('visible');
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Auto-calculate on load
+window.addEventListener('DOMContentLoaded', calculate);
+</script>
+
+</body>
+</html>
