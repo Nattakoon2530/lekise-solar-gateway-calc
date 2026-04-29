@@ -532,6 +532,98 @@
     font-weight: 600;
   }
 
+  /* ===== PRINT BUTTON ===== */
+  .btn-print {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: transparent;
+    color: var(--lk-white);
+    border: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: var(--radius-md);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .btn-print:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.7);
+  }
+  .btn-print:active { transform: scale(0.98); }
+
+  /* ===== PRINT / PDF STYLES ===== */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 15mm 12mm 15mm 12mm;
+    }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    body { background: #fff !important; font-size: 11px; }
+
+    nav { position: relative; box-shadow: none; height: auto; padding: 8px 14px; page-break-inside: avoid; }
+    .btn-print, .nav-pill { display: none !important; }
+
+    .hero { padding: 14px 14px 12px; page-break-inside: avoid; }
+    .hero h1 { font-size: 18px; }
+    .hero p { font-size: 12px; }
+    .hero-icon { width: 36px; height: 36px; }
+
+    .page { padding: 10px 0 16px; max-width: 100%; }
+
+    .chips { display: none; }
+
+    .section-label { font-size: 10px; margin-bottom: 6px; }
+
+    .grid-2 { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .card { box-shadow: none; page-break-inside: avoid; border: 1px solid #C5D9EE; }
+    .card-header { padding: 6px 12px; }
+    .card-header h2 { font-size: 11px; }
+    .card-body { padding: 10px 12px; }
+
+    label { font-size: 11px; margin-bottom: 3px; }
+    .input-wrap { border: 1px solid #C5D9EE; border-radius: 6px; }
+    .input-wrap input, .input-wrap select { font-size: 12px; padding: 5px 8px; }
+    .input-unit { font-size: 10px; padding: 0 8px; }
+    .field { margin-bottom: 7px; }
+
+    .btn-calc { display: none !important; }
+
+    .results-section { display: block !important; animation: none !important; margin-top: 10px; }
+
+    .results-grid { grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 8px; }
+    .metric-card { padding: 8px 6px; page-break-inside: avoid; }
+    .metric-value { font-size: 20px; }
+    .metric-label { font-size: 9px; }
+    .metric-unit { font-size: 9px; }
+
+    .steps-table { font-size: 10px; }
+    .steps-table th { font-size: 9px; padding: 6px 8px; }
+    .steps-table td { padding: 6px 8px; }
+
+    .summary-box { page-break-inside: avoid; margin-top: 8px; border: 2px solid #1167B1; }
+    .summary-header { padding: 8px 14px; }
+    .summary-header span { font-size: 11px; }
+    .sum-item { padding: 10px 14px; }
+    .sum-item-value { font-size: 15px; }
+    .sum-item-label { font-size: 9px; }
+    .sum-item-note { font-size: 9px; }
+
+    footer { padding: 10px 14px; page-break-inside: avoid; }
+    footer p { font-size: 10px; }
+
+    .print-timestamp { display: block !important; }
+  }
+
+  .print-timestamp { display: none; }
+
   /* ===== INFO CHIPS ===== */
   .chips {
     display: flex;
@@ -585,6 +677,10 @@
   </a>
   <div class="nav-right">
     <div class="nav-pill">Gateway Station · 48 VDC</div>
+    <button class="btn-print" onclick="printReport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / PDF
+    </button>
   </div>
 </nav>
 
@@ -859,6 +955,7 @@
 <footer>
   <p><strong>LeKise Group</strong> · Solar Sizing Calculator for Stand-Alone IoT Gateway</p>
   <p style="margin-top: 6px;">คำนวณสำหรับ ZETA AP Gateway · 48 VDC System · All-in-One Solar + Battery</p>
+  <p class="print-timestamp" id="print_ts" style="margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.5);"></p>
 </footer>
 
 <script>
@@ -990,6 +1087,21 @@ function calculate() {
 
 // Auto-calculate on load
 window.addEventListener('DOMContentLoaded', calculate);
+
+function printReport() {
+  // Stamp timestamp before printing
+  var ts = document.getElementById('print_ts');
+  if (ts) {
+    var now = new Date();
+    ts.textContent = 'Printed: ' + now.toLocaleDateString('th-TH', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  // Make sure results are visible
+  document.getElementById('results').classList.add('visible');
+  window.print();
+}
 </script>
 
 </body>
